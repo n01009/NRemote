@@ -27,6 +27,7 @@ namespace NRemote
         IntPtr hookPtr = IntPtr.Zero;
 
         bool CaptureStart = false;
+        int imgwidth = 0, imgheight = 0;
         public frmMain()
         {
             InitializeComponent();
@@ -56,13 +57,20 @@ namespace NRemote
 
             using (var capture = new VideoCapture())
             {
-                //カメラの起動　
                 capture.Open(Properties.Settings.Default.CameraID);
-
+                imgheight = capture.FrameHeight;
+                imgwidth = capture.FrameWidth;
                 if (!capture.IsOpened())
                 {
                     throw new Exception("capture initialization failed");
                 }
+
+                Invoke(new Action(() =>
+                {
+                    this.Height = this.Height + imgheight - pictureBox1.Height;
+                    this.Width = this.Width + imgwidth - pictureBox1.Width;
+                }));
+
 
                 Mat mat = new Mat();
                 while (CaptureStart)
@@ -133,15 +141,6 @@ namespace NRemote
             }
         }
 
-        int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            if (this.Focused == false) return 0;
-            // フックしたキー
-            Debug.WriteLine((Keys)(short)Marshal.ReadInt32(lParam));
-
-            return 1;
-        }
-
         public void HookEnd()
         {
             UnhookWindowsHookEx(hookPtr);
@@ -151,6 +150,29 @@ namespace NRemote
         private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             HookEnd();
+        }
+
+
+        int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (this.Focused == false) return 0;
+            // フックしたキー
+            Debug.WriteLine((Keys)(short)Marshal.ReadInt32(lParam));
+
+            return 1;
+        }
+
+        private void frmMain_SizeChanged(object sender, EventArgs e)
+        {
+
+
+
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            Debug.WriteLine($"X:{pos.X} Y:{pos.Y} H:{imgheight} W:{imgwidth}");
         }
     }
 }
