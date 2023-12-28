@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -13,15 +14,31 @@ namespace NRemote
 {
     public partial class frmMain : Form
     {
+        delegate int delegateHookCallback(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr SetWindowsHookEx(int idHook, delegateHookCallback lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetModuleHandle(string lpModuleName);
+        IntPtr hookPtr = IntPtr.Zero;
+
         bool CaptureStart = false;
         public frmMain()
         {
             InitializeComponent();
             停止ToolStripMenuItem.Enabled = false;
             this.Text += $" <Ver:{Application.ProductVersion}>";
+
+            Hook();
+
+
         }
 
- 
+
         private void 開始ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var frm = new frmSetting();
@@ -91,19 +108,49 @@ namespace NRemote
             }
         }
 
-        private void frmMain_KeyDown(object sender, KeyEventArgs e)
+
+        public void Hook()
         {
-#if DEBUG == false
-            if (CaptureStart == false) return;
-#endif
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
+            {
+                // フックを行う
+                // 第1引数   フックするイベントの種類
+                //   13はキーボードフックを表す
+                // 第2引数 フック時のメソッドのアドレス
+                //   フックメソッドを登録する
+                // 第3引数   インスタンスハンドル
+                //   現在実行中のハンドルを渡す
+                // 第4引数   スレッドID
+                //   0を指定すると、すべてのスレッドでフックされる
+                var currentProcess = Process.GetCurrentProcess();
+                hookPtr = SetWindowsHookEx(
+                    13,
+                    HookCallback,
+                    GetModuleHandle(curModule.ModuleName),
+                  0
+                );
+            }
         }
 
-        private void frmMain_KeyUp(object sender, KeyEventArgs e)
+        int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-#if DEBUG == false
-            if (CaptureStart == false) return;
-#endif
-            Debug.WriteLine(e.KeyValue.ToString() );
+            if (this.Focused == false) return 0;
+            // フックしたキー
+            Debug.WriteLine((Keys)(short)Marshal.ReadInt32(lParam));
+
+            return 1;
+        }
+
+        public void HookEnd()
+        {
+            UnhookWindowsHookEx(hookPtr);
+            hookPtr = IntPtr.Zero;
+        }
+
+        private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            HookEnd();
         }
     }
 }
