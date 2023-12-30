@@ -28,6 +28,8 @@ namespace NRemote
 
         bool CaptureStart = false;
         int imgwidth = 0, imgheight = 0;
+        Message message = new Message();
+
         public frmMain()
         {
             InitializeComponent();
@@ -157,7 +159,20 @@ namespace NRemote
         {
             if (this.Focused == false) return 0;
             // フックしたキー
-            Debug.WriteLine((Keys)(short)Marshal.ReadInt32(lParam));
+            // Debug.WriteLine($"{(Keys)(short)Marshal.ReadInt32(lParam)} {((short)Marshal.ReadInt32(lParam)).ToString("x")}" );
+            var key = message.GetSendKeyCode((short)Marshal.ReadInt32(lParam));
+            var param = (short)wParam;
+            switch (param)
+            {
+                case 0x100:
+                    Debug.WriteLine($"Key Dn:{key.KeyName} 0x{key.SendKeyCode.ToString("X")}");
+                    break;
+                case 0x101:
+                    Debug.WriteLine($"Key Up:{key.KeyName} 0x{key.SendKeyCode.ToString("X")}");
+                    break;
+                default:
+                    break;
+            }
 
             return 1;
         }
@@ -172,7 +187,7 @@ namespace NRemote
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             var pos = e.Location;
-            Debug.WriteLine($"X:{pos.X} Y:{pos.Y} H:{imgheight} W:{imgwidth}");
+            // Debug.WriteLine($"X:{pos.X} Y:{pos.Y} H:{imgheight} W:{imgwidth}");
         }
     }
 }
