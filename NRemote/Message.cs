@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace NRemote
@@ -121,13 +122,13 @@ namespace NRemote
             _keys.Add(new KeyInfo(0x1C, "変換", 0x8A));
             _keys.Add(new KeyInfo(0x1D, "無変換", 0x8B));
 
-            _keys.Add(new KeyInfo(0xA2, "Ctrl(左)", 0xE0));
-            _keys.Add(new KeyInfo(0xA0, "Shift(左)", 0xE1));
-            _keys.Add(new KeyInfo(0xA4, "Alt(左)", 0xE2));
-            _keys.Add(new KeyInfo(0x5B, "Windows(左)", 0xE3));
-            _keys.Add(new KeyInfo(0xA3, "Ctrl(右)", 0xE4));
-            _keys.Add(new KeyInfo(0xA1, "Shift(右)", 0xE5));
-            _keys.Add(new KeyInfo(0xA5, "Alt(右)", 0xE6));
+            _keys.Add(new KeyInfo(0xA2, "Ctrl(左)", 0xE0, true, 0x01));
+            _keys.Add(new KeyInfo(0xA0, "Shift(左)", 0xE1, true, 0x02));
+            _keys.Add(new KeyInfo(0xA4, "Alt(左)", 0xE2, true, 0x04));
+            _keys.Add(new KeyInfo(0x5B, "Windows(左)", 0xE3, true, 0x08));
+            _keys.Add(new KeyInfo(0xA3, "Ctrl(右)", 0xE4, true, 0x10));
+            _keys.Add(new KeyInfo(0xA1, "Shift(右)", 0xE5, true, 0x20));
+            _keys.Add(new KeyInfo(0xA5, "Alt(右)", 0xE6, true, 0x40));
             //  _keys.Add(new KeyInfo(107, "WIndows(右)", 0xE7));
 
         }
@@ -149,20 +150,59 @@ namespace NRemote
 
 
         }
+
+        const byte HEAD1 = 0x57;
+        const byte HEAD2 = 0xAB;
+        public byte[] getKebordMessage(KeyInfo[] keys)
+        {
+
+            //キー離すコマンド
+            byte[] cmd = new byte[] { HEAD1, HEAD2, 0x00, 0x02, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C };
+            if (keys != null)
+            {
+                byte ckey = 0x00;
+                byte ukey = 0x00;
+                foreach (var key in keys)
+                {
+                    if (key.CtlKey)
+                    {
+                        ckey += key.CtlCode;
+                    }
+                    else
+                    {
+                        ukey = key.SendKeyCode;
+                    }
+                }
+                cmd[5] = ckey;
+                cmd[7] = ukey;
+                byte sum = (byte)(HEAD1 + HEAD2 + 0x02 + 0x08 + ckey + ukey);
+                cmd[13] = sum;
+            }
+
+
+
+            return cmd;
+        }
+
+
     }
 
 
 
     public class KeyInfo
     {
-        public KeyInfo(short KeyCode, String KeyName, byte SendKeyCode)
+        public KeyInfo(short KeyCode, String KeyName, byte SendKeyCode, bool CtlKey = false, byte CtlCode = 0)
         {
             this.KeyCode = KeyCode;
             this.KeyName = KeyName;
             this.SendKeyCode = SendKeyCode;
+            this.CtlKey = CtlKey;
+            this.CtlCode = CtlCode;
         }
         public short KeyCode { get; private set; }
         public String KeyName { get; private set; }
         public byte SendKeyCode { get; private set; }
+        public bool CtlKey { get; private set; }
+        public byte CtlCode { get; private set; }
     }
 }

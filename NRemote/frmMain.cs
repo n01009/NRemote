@@ -1,8 +1,10 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,7 +31,7 @@ namespace NRemote
         bool CaptureStart = false;
         int imgwidth = 0, imgheight = 0;
         Message message = new Message();
-
+        List<KeyInfo> KeyDownCtlKeys = new List<KeyInfo>();
         public frmMain()
         {
             InitializeComponent();
@@ -38,7 +40,7 @@ namespace NRemote
 
             Hook();
 
-
+            serialPort1.Open();
         }
 
 
@@ -155,6 +157,7 @@ namespace NRemote
         }
 
 
+
         int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (this.Focused == false) return 0;
@@ -162,13 +165,41 @@ namespace NRemote
             // Debug.WriteLine($"{(Keys)(short)Marshal.ReadInt32(lParam)} {((short)Marshal.ReadInt32(lParam)).ToString("x")}" );
             var key = message.GetSendKeyCode((short)Marshal.ReadInt32(lParam));
             var param = (short)wParam;
+            byte[] sendData;
             switch (param)
             {
                 case 0x100:
                     Debug.WriteLine($"Key Dn:{key.KeyName} 0x{key.SendKeyCode.ToString("X")}");
+                    if (key.CtlKey)
+                    {
+                        if (KeyDownCtlKeys.Any(X => X == key) == false) KeyDownCtlKeys.Add(key);
+                        sendData = message.getKebordMessage(KeyDownCtlKeys.ToArray());
+                        serialPort1.Write(sendData, 0, sendData.Length);
+                    }
+                    else
+                    {
+                        var keyList = KeyDownCtlKeys.ToList();
+                        keyList.Add(key);
+                        sendData = message.getKebordMessage(keyList.ToArray());
+                        serialPort1.Write(sendData, 0, sendData.Length);
+                    }
                     break;
                 case 0x101:
                     Debug.WriteLine($"Key Up:{key.KeyName} 0x{key.SendKeyCode.ToString("X")}");
+                    if (key.CtlKey)
+                    {
+                        KeyDownCtlKeys.RemoveAll(X => X == key);
+                        sendData = message.getKebordMessage(null);
+                        serialPort1.Write(sendData, 0, sendData.Length);
+                        sendData = message.getKebordMessage(KeyDownCtlKeys.ToArray());
+                        serialPort1.Write(sendData, 0, sendData.Length);
+                    }
+                    else
+                    {
+                        sendData = message.getKebordMessage(null);
+                        serialPort1.Write(sendData, 0, sendData.Length);
+                    }
+
                     break;
                 default:
                     break;
