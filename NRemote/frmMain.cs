@@ -214,10 +214,12 @@ namespace NRemote
 
 
         }
-
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void MouseEvents(object sender, MouseEventArgs e)
         {
             var pos = e.Location;
+
+
+
             // Debug.WriteLine($"X:{pos.X} Y:{pos.Y} H:{imgheight} W:{imgwidth}");
         }
     }

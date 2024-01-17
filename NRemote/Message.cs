@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -153,6 +154,7 @@ namespace NRemote
 
         const byte HEAD1 = 0x57;
         const byte HEAD2 = 0xAB;
+        const int DATA_POS = 5;
         public byte[] getKebordMessage(KeyInfo[] keys)
         {
 
@@ -173,18 +175,30 @@ namespace NRemote
                         ukey = key.SendKeyCode;
                     }
                 }
-                cmd[5] = ckey;
-                cmd[7] = ukey;
+                cmd[DATA_POS + 0] = ckey;
+                cmd[DATA_POS + 2] = ukey;
                 byte sum = (byte)(HEAD1 + HEAD2 + 0x02 + 0x08 + ckey + ukey);
                 cmd[13] = sum;
             }
-
-
-
             return cmd;
         }
 
 
+
+        public byte[] getMouseMessage(Point pos, bool MouseLeftOn, bool MouseRightOn, bool MouseCenterOn, int Scroll)
+        {
+            byte[] cmd = new byte[] { HEAD1, HEAD2, 0x00, 0x04, 0x07, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C };
+            byte mousekey = 0x00;
+            if (MouseLeftOn) mousekey += 0x01;
+            if (MouseRightOn) mousekey += 0x02;
+            if (MouseCenterOn) mousekey += 0x04;
+            cmd[DATA_POS + 1] = mousekey;
+
+
+            
+
+            return cmd;
+        }
     }
 
 
