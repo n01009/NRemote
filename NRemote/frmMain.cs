@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NRemote
 {
@@ -39,6 +40,7 @@ namespace NRemote
         public frmMain()
         {
             InitializeComponent();
+            pictureBox1.MouseWheel += MouseEvents;
             停止ToolStripMenuItem.Enabled = false;
             this.Text += $" <Ver:{Application.ProductVersion}>";
             Hook();
@@ -66,6 +68,9 @@ namespace NRemote
 
                 capture.FrameHeight = 1080;
                 capture.FrameWidth = 1920;
+                message.Height = capture.FrameHeight;
+                message.Width = capture.FrameWidth;
+
 
                 imgheight = capture.FrameHeight;
                 imgwidth = capture.FrameWidth;
@@ -169,7 +174,7 @@ namespace NRemote
         int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (this.Focused == false) return 0;
-            if(serialPort1.IsOpen ==false) return 0;
+            if (serialPort1.IsOpen == false) return 0;
             // フックしたキー
             // Debug.WriteLine($"{(Keys)(short)Marshal.ReadInt32(lParam)} {((short)Marshal.ReadInt32(lParam)).ToString("x")}" );
             var key = message.GetSendKeyCode((short)Marshal.ReadInt32(lParam));
@@ -223,16 +228,25 @@ namespace NRemote
 
 
         }
+
+        bool LeftButton;
+        bool RightButton;
+        bool MiddleButton;
+
         private void MouseEvents(object sender, MouseEventArgs e)
         {
             var pos = e.Location;
             if (this.Focused == false) return;
             if (serialPort1.IsOpen == false) return;
 
+            LeftButton = e.Button == MouseButtons.Left;
+            RightButton = e.Button == MouseButtons.Right;
+            MiddleButton = e.Button == MouseButtons.Middle;
+           int mouseWheel=  e.Delta /120;
+            System.Drawing.Point point = new System.Drawing.Point(pos.X, pos.Y);
+            byte[] sendData = message.getMouseMessage(point, LeftButton, RightButton, MiddleButton, mouseWheel);
+            serialPort1.Write(sendData, 0, sendData.Length);
 
-
-
-            // Debug.WriteLine($"X:{pos.X} Y:{pos.Y} H:{imgheight} W:{imgwidth}");
         }
     }
 }

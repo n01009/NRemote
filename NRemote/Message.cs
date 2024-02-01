@@ -67,7 +67,7 @@ namespace NRemote
             _keys.Add(new KeyInfo(0xDD, "]", 0x31));
             _keys.Add(new KeyInfo(0xBB, ";", 0x33));
             _keys.Add(new KeyInfo(0xBA, ":", 0x34));
-            // _keys.Add(new KeyInfo(0xF3, "半角／全角", 0x35));
+             //_keys.Add(new KeyInfo(0xF3, "半角／全角", 0x35));
             //     _keys.Add(new KeyInfo(0xF4, "半角／全角", 0x35));
             _keys.Add(new KeyInfo(0xBC, ",", 0x36));
             _keys.Add(new KeyInfo(0xBE, ".", 0x37));
@@ -189,15 +189,36 @@ namespace NRemote
 
         public byte[] getMouseMessage(Point pos, bool MouseLeftOn, bool MouseRightOn, bool MouseCenterOn, int Scroll)
         {
-            byte[] cmd = new byte[] { HEAD1, HEAD2, 0x00, 0x04, 0x07, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C };
+            byte[] cmd = new byte[] { HEAD1, HEAD2, 0x00, 0x04, 0x07, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
             byte mousekey = 0x00;
             if (MouseLeftOn) mousekey += 0x01;
             if (MouseRightOn) mousekey += 0x02;
             if (MouseCenterOn) mousekey += 0x04;
             cmd[DATA_POS + 1] = mousekey;
 
+            int x = (4096 * pos.X) / Width;
+            int y = (4096 * pos.Y) / Height;
 
+      
 
+            var bytes = BitConverter.GetBytes(x);
+            cmd[DATA_POS + 2] = bytes[0];
+            cmd[DATA_POS + 3] = bytes[1];
+
+            bytes = BitConverter.GetBytes(y);
+            cmd[DATA_POS + 4] = bytes[0];
+            cmd[DATA_POS + 5] = bytes[1];
+
+            cmd[DATA_POS + 6] = (byte)Scroll;
+
+            int int_sum = 0;
+            foreach (byte b in cmd)
+            {
+                int_sum += b;
+            }
+            byte sum = (byte)int_sum;
+            cmd[12] = sum;
 
             return cmd;
         }
