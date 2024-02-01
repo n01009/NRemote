@@ -66,8 +66,8 @@ namespace NRemote
             {
                 capture.Open(Properties.Settings.Default.CameraID);
 
-                capture.FrameHeight = 1080;
-                capture.FrameWidth = 1920;
+                capture.FrameHeight = Properties.Settings.Default.H;
+                capture.FrameWidth = Properties.Settings.Default.W;
                 message.Height = capture.FrameHeight;
                 message.Width = capture.FrameWidth;
 

@@ -38,7 +38,8 @@ namespace NRemote
             }
 
             selCom.Value = Properties.Settings.Default.COM;
-
+            selW.Value= Properties.Settings.Default.W;
+            selH.Value= Properties.Settings.Default.H;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -51,6 +52,8 @@ namespace NRemote
 
             Properties.Settings.Default.CameraID = (int)selCameraID.SelectedItem;
             Properties.Settings.Default.COM = (int)selCom.Value ;
+            Properties.Settings.Default.W = (int)selW.Value;
+            Properties.Settings.Default.H = (int)selH.Value;
             Properties.Settings.Default.Save ();
             this.Close();
             this.DialogResult = DialogResult.OK;

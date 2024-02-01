@@ -46,5 +46,29 @@ namespace NRemote.Properties {
                 this["COM"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1920")]
+        public int W {
+            get {
+                return ((int)(this["W"]));
+            }
+            set {
+                this["W"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1080")]
+        public int H {
+            get {
+                return ((int)(this["H"]));
+            }
+            set {
+                this["H"] = value;
+            }
+        }
     }
 }
