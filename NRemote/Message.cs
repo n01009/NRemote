@@ -14,6 +14,8 @@ namespace NRemote
     {
         List<KeyInfo> _keys = new List<KeyInfo>();
 
+        public int Height { get; set; }
+        public int Width { get; set; }
         public Message()
         {
             _keys.Add(new KeyInfo(0x31, "1", 0x1E));
@@ -49,9 +51,9 @@ namespace NRemote
             _keys.Add(new KeyInfo(0x53, "S", 0x16));
             _keys.Add(new KeyInfo(0x54, "T", 0x17));
             _keys.Add(new KeyInfo(0x55, "U", 0x18));
-            _keys.Add(new KeyInfo(0x56, "X", 0x18));
-            _keys.Add(new KeyInfo(0x57, "V", 0x19));
-            _keys.Add(new KeyInfo(0x58, "W", 0x1A));
+            _keys.Add(new KeyInfo(0x56, "X", 0x19));
+            _keys.Add(new KeyInfo(0x57, "V", 0x1A));
+            _keys.Add(new KeyInfo(0x58, "W", 0x1B));
             _keys.Add(new KeyInfo(0x59, "Y", 0x1C));
             _keys.Add(new KeyInfo(0x5A, "Z", 0x1D));
             _keys.Add(new KeyInfo(0xD, "Enter(左)", 0x28));
@@ -195,7 +197,7 @@ namespace NRemote
             cmd[DATA_POS + 1] = mousekey;
 
 
-            
+
 
             return cmd;
         }

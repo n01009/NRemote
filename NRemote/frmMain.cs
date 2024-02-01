@@ -19,6 +19,7 @@ namespace NRemote
         delegate int delegateHookCallback(int nCode, IntPtr wParam, IntPtr lParam);
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern IntPtr SetWindowsHookEx(int idHook, delegateHookCallback lpfn, IntPtr hMod, uint dwThreadId);
+        delegateHookCallback mouseHookProc = null;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -27,6 +28,9 @@ namespace NRemote
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern IntPtr GetModuleHandle(string lpModuleName);
         IntPtr hookPtr = IntPtr.Zero;
+
+
+
 
         bool CaptureStart = false;
         int imgwidth = 0, imgheight = 0;
@@ -37,10 +41,7 @@ namespace NRemote
             InitializeComponent();
             停止ToolStripMenuItem.Enabled = false;
             this.Text += $" <Ver:{Application.ProductVersion}>";
-
             Hook();
-
-            serialPort1.Open();
         }
 
 
@@ -62,6 +63,10 @@ namespace NRemote
             using (var capture = new VideoCapture())
             {
                 capture.Open(Properties.Settings.Default.CameraID);
+
+                capture.FrameHeight = 1080;
+                capture.FrameWidth = 1920;
+
                 imgheight = capture.FrameHeight;
                 imgwidth = capture.FrameWidth;
                 if (!capture.IsOpened())
@@ -74,7 +79,8 @@ namespace NRemote
                     this.Height = this.Height + imgheight - pictureBox1.Height;
                     this.Width = this.Width + imgwidth - pictureBox1.Width;
                 }));
-
+                serialPort1.PortName = $"COM{Properties.Settings.Default.COM}";
+                serialPort1.Open();
 
                 Mat mat = new Mat();
                 while (CaptureStart)
@@ -92,13 +98,14 @@ namespace NRemote
                         {
                             pictureBox1.Image = BitmapConverter.ToBitmap(mat);
                         }
-                        Task.Delay(100);
+                        Task.Delay(50);
                     }
                     catch (Exception ex)
                     {
                     }
                 }
             }
+
         }
 
         private void 停止ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -136,9 +143,10 @@ namespace NRemote
                 // 第4引数   スレッドID
                 //   0を指定すると、すべてのスレッドでフックされる
                 var currentProcess = Process.GetCurrentProcess();
+                mouseHookProc = HookCallback;
                 hookPtr = SetWindowsHookEx(
                     13,
-                    HookCallback,
+                    mouseHookProc,
                     GetModuleHandle(curModule.ModuleName),
                   0
                 );
@@ -161,6 +169,7 @@ namespace NRemote
         int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (this.Focused == false) return 0;
+            if(serialPort1.IsOpen ==false) return 0;
             // フックしたキー
             // Debug.WriteLine($"{(Keys)(short)Marshal.ReadInt32(lParam)} {((short)Marshal.ReadInt32(lParam)).ToString("x")}" );
             var key = message.GetSendKeyCode((short)Marshal.ReadInt32(lParam));
@@ -217,6 +226,9 @@ namespace NRemote
         private void MouseEvents(object sender, MouseEventArgs e)
         {
             var pos = e.Location;
+            if (this.Focused == false) return;
+            if (serialPort1.IsOpen == false) return;
+
 
 
 
