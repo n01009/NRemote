@@ -20,7 +20,7 @@ namespace NRemote
         {
             InitializeComponent();
             btnOK.Enabled = false;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 5; i++)
             {
                 using (var capture = new VideoCapture())
                 {

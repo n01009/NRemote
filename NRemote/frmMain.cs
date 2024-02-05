@@ -84,8 +84,17 @@ namespace NRemote
                     this.Height = this.Height + imgheight - pictureBox1.Height;
                     this.Width = this.Width + imgwidth - pictureBox1.Width;
                 }));
+                try { 
                 serialPort1.PortName = $"COM{Properties.Settings.Default.COM}";
                 serialPort1.Open();
+                }catch(Exception ex)
+                {
+                    MessageBox.Show("COMポートがOpenできません。","",MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    CaptureStart = false;
+                    停止ToolStripMenuItem.Enabled = false;
+                    開始ToolStripMenuItem.Enabled = true;
+                    return;
+                }
 
                 Mat mat = new Mat();
                 while (CaptureStart)
@@ -103,7 +112,7 @@ namespace NRemote
                         {
                             pictureBox1.Image = BitmapConverter.ToBitmap(mat);
                         }
-                        Task.Delay(50);
+                        Task.Delay(100);
                     }
                     catch (Exception ex)
                     {
