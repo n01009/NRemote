@@ -112,7 +112,7 @@ namespace NRemote
                         {
                             pictureBox1.Image = BitmapConverter.ToBitmap(mat);
                         }
-                        Task.Delay(100);
+                        Task.Delay(50);
                     }
                     catch (Exception ex)
                     {

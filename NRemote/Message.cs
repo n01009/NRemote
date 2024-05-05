@@ -118,10 +118,10 @@ namespace NRemote
 
             //   _keys.Add(new KeyInfo(59, "Application", 0x65));
 
-            _keys.Add(new KeyInfo(0xDC, @"\", 0x87));
+            _keys.Add(new KeyInfo(0xDC, @"\", 0x89));
             //   _keys.Add(new KeyInfo(0xF0, "カタカナひらがな", 0x88));
             //   _keys.Add(new KeyInfo(0xF2, "カタカナひらがな", 0x88));
-            _keys.Add(new KeyInfo(0xE2, @"\", 0x89));
+            _keys.Add(new KeyInfo(0xE2, @"\", 0x87));
             _keys.Add(new KeyInfo(0x1C, "変換", 0x8A));
             _keys.Add(new KeyInfo(0x1D, "無変換", 0x8B));
 
